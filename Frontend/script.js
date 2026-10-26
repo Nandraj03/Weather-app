@@ -1,5 +1,3 @@
-const API_KEY = "bea6ce91fc6dc93c7f15ffa3105c65ed";
-
 const form = document.getElementById("search-form");
 const cityInput = document.getElementById("city-input");
 const message = document.getElementById("message");
@@ -18,6 +16,7 @@ form.addEventListener("submit", async (event) => {
     await getWeather(city);
 });
 
+
 async function getWeather(city) {
     const button = form.querySelector("button");
 
@@ -29,23 +28,12 @@ async function getWeather(city) {
 
     try {
         const url =
-            `https://api.openweathermap.org/data/2.5/weather` +
-            `?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
+            `http://localhost:3000/api/weather?city=${encodeURIComponent(city)}`;
 
         const response = await fetch(url);
         const data = await response.json();
 
         if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error("City not found. Check the spelling.");
-            }
-
-            if (response.status === 401) {
-                throw new Error(
-                    "API key is invalid or not active yet. Try again later."
-                );
-            }
-
             throw new Error(
                 data.message || "Unable to get weather information."
             );
@@ -67,14 +55,21 @@ async function getWeather(city) {
             `${data.wind.speed} m/s`;
 
         const icon = document.getElementById("weather-icon");
+
         icon.src =
             `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
         icon.alt = data.weather[0].description;
 
         message.textContent = "";
         weatherCard.hidden = false;
+
     } catch (error) {
-        showMessage(error.message);
+        showMessage(
+            error.message === "Failed to fetch"
+                ? "Cannot connect to the backend. Make sure your server is running."
+                : error.message
+        );
     } finally {
         button.disabled = false;
         button.textContent = "Search";
